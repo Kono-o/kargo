@@ -52,7 +52,7 @@ fn parse() -> Result<Args, ArgsError> {
       Some(func) => {
          match func {
             "help"| "h" => Ok(Args { dir: std::env::current_dir().unwrap(), func: Func::Help }),
-            "info"| "i"| "about" => Ok(Args { dir: std::env::current_dir().unwrap(), func: Func::Info }),
+            "info"| "i" => Ok(Args { dir: std::env::current_dir().unwrap(), func: Func::Info }),
             "rld"| "reload"| "r" => Ok(Args { dir: std::env::current_dir().unwrap(), func: Func::Rld }),
             "new"| "n" | "make"| "mk"| "init" |"create" | "crate" | "cr" => Ok(Args {
                dir: std::env::current_dir().unwrap(),

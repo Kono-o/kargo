@@ -6,7 +6,9 @@ Wraps over cargo commands to generate personal config and boilerplate.
 ## Usage
 
 ```
-kargo new foo 
+kargo mk
+kargo mk --lib
+kargo mk foo 
 kargo wrk mylib mybin
 kargo rld
 ```
