@@ -4,7 +4,7 @@ use crate::func;
 use crate::kargo::ArgsError;
 use std::fs;
 
-pub async fn new(cwd: &PathBuf, flags: Vec<String>) -> Result<(), ArgsError> {
+pub async fn mk(cwd: &PathBuf, flags: Vec<String>) -> Result<(), ArgsError> {
    let status = Command::new("cargo")
       .arg("init")
       .args(&flags)
@@ -21,7 +21,7 @@ pub async fn new(cwd: &PathBuf, flags: Vec<String>) -> Result<(), ArgsError> {
             .unwrap_or_else(|| "(unknown crate)".to_string());
          
          let in_place = crate_name_flag.is_none();
-         post_process(&crate_name, in_place);
+         kargo(&crate_name, in_place);
          Ok(())
       }
       Ok(code) => Err(ArgsError::FuncError(format!(
@@ -35,8 +35,49 @@ pub async fn new(cwd: &PathBuf, flags: Vec<String>) -> Result<(), ArgsError> {
    }
 }
 
+pub async fn wrk(_x: &PathBuf, lib: &String, bin: &String) {
+   let _ = Command::new("kargo").args(["new", "--lib", lib]).status();
+   let _ = Command::new("kargo").args(["new", "--bin", bin]).status();
+   
+   let _ = fs::write("Cargo.toml", format!(
+      "[workspace]\nmembers = [\"{}\", \"{}\"]\nresolver = \"2\"\n",
+      lib, bin
+   ));
+   
+   let _ = fs::write("rustfmt.toml", "tab_spaces = 3\n");
+   
+   let bin_toml = Path::new(bin).join("Cargo.toml");
+   
+   if let Ok(content) = fs::read_to_string(&bin_toml) {
+      let mut lines: Vec<&str> = content.lines().collect();
+      let dep_header_index = lines.iter().position(|line| line.trim() == "[dependencies]");
+      
+      let dep_append = format!(
+         "{} = {{ path = \"../{}\" }}\n# use this instead when compiling from github\n# {} = {{ git = \"https://github.com/Kono-o/{}.git\" }}\n# or just crates io link: https://crates.io/crates/{}",
+         lib, lib, lib, lib, lib
+      );
+      
+      let new_content = if let Some(index) = dep_header_index {
+         lines.insert(index + 1, &dep_append);
+         lines.join("\n")
+      } else {
+         format!("{}\n\n[dependencies]\n{}", content.trim_end(), dep_append)
+      };
+      
+      let _ = fs::write(&bin_toml, new_content);
+   }
+   
+   func::msg_ok("WS: KARGO workspace scaffolded");
+}
 
-fn post_process(crate_name: &str, in_place: bool) {
+pub async fn reload() {
+   let _ = Command::new("cargo").args(["build","--release"]).status();
+   func::msg_ok("kargo crate built!");
+   let _ = Command::new("cargo").args(["install", "--path", "."]).status();
+   func::msg_ok("kargo crate installed!");
+}
+
+fn kargo(crate_name: &str, in_place: bool) {
    use std::fs;
    
    let crate_path = if in_place {
@@ -80,47 +121,4 @@ fn post_process(crate_name: &str, in_place: bool) {
       .status();
    
    func::msg_ok(&format!("kargo post process applied to crate '{}'!", crate_name));
-}
-
-pub async fn wrk(_x: &PathBuf, lib: &String, bin: &String) {
-   let _ = Command::new("kargo").args(["new", "--lib", lib]).status();
-   let _ = Command::new("kargo").args(["new", "--bin", bin]).status();
-   
-   let _ = fs::write("Cargo.toml", format!(
-      "[workspace]\nmembers = [\"{}\", \"{}\"]\nresolver = \"2\"\n",
-      lib, bin
-   ));
-   
-   let _ = fs::write("rustfmt.toml", "tab_spaces = 3\n");
-   
-   let bin_toml = Path::new(bin).join("Cargo.toml");
-   
-   if let Ok(content) = fs::read_to_string(&bin_toml) {
-      let mut lines: Vec<&str> = content.lines().collect();
-      let dep_header_index = lines.iter().position(|line| line.trim() == "[dependencies]");
-      
-      let dep_append = format!(
-         "{} = {{ path = \"../{}\" }}\n# use this instead when compiling from github\n# {} = {{ git = \"https://github.com/Kono-o/{}.git\" }}\n# or just crates io link: https://crates.io/crates/{}",
-         lib, lib, lib, lib, lib
-      );
-      
-      let new_content = if let Some(index) = dep_header_index {
-         lines.insert(index + 1, &dep_append);
-         lines.join("\n")
-      } else {
-         format!("{}\n\n[dependencies]\n{}", content.trim_end(), dep_append)
-      };
-      
-      let _ = fs::write(&bin_toml, new_content);
-   }
-   
-   func::msg_ok("WS: KARGO workspace scaffolded");
-}
-
-
-pub async fn reload() {
-   let _ = Command::new("cargo").args(["build","--release"]).status();
-   func::msg_ok("kargo crate built!");
-   let _ = Command::new("cargo").args(["install", "--path", "."]).status();
-   func::msg_ok("kargo crate installed!");
 }

@@ -80,7 +80,7 @@ async fn func(args: Args) -> Result<(), ArgsError> {
    match args.func {
       Func::Help => func::help(),
       Func::Info => func::info(),
-      Func::New(flags) => match func::new(&args.dir, flags).await {
+      Func::New(flags) => match func::mk(&args.dir, flags).await {
          Err(e) => e.handle(),
          Ok(_) => return Ok(()),
       }
