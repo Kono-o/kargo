@@ -66,7 +66,7 @@ fn post_process(crate_name: &str, in_place: bool) {
    }
    
    let readme_content = format!(
-      "#{}\n\nblank Kargo description.\n\n## Usage\n\n```\nblank\n```\n\n### Examples\n\n```\nblank\n```\n\n### Help\n\n```\nblank\n```\n\n## Install\n\n### From crates.io\n\n```\ncargo install {}\n```\n\n### From source\n\n```\ngit clone https://github.com/Kono-o/{}\ncd {}\ncargo install --path .\n```\n",
+      "# {}\n\nblank Kargo description.\n\n## Usage\n\n```\nblank\n```\n\n### Examples\n\n```\nblank\n```\n\n### Help\n\n```\nblank\n```\n\n## Install\n\n### From crates.io\n\n```\ncargo install {}\n```\n\n### From source\n\n```\ngit clone https://github.com/Kono-o/{}\ncd {}\ncargo install --path .\n```\n",
       crate_name, crate_name, crate_name, crate_name
    );
    let _ = fs::write(&readme, readme_content);

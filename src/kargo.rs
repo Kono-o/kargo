@@ -48,8 +48,6 @@ fn parse() -> Result<Args, ArgsError> {
    let token_0 = args.next();
    let flags: Vec<String> = args.collect();
    
-   println!("FN {:?}  FLAGS {:?}", token_0, flags);
-   
    match token_0.as_deref() {
       Some(func) => {
          match func {

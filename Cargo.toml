@@ -2,6 +2,20 @@
 name = "kargo"
 version = "0.1.0"
 edition = "2021"
+authors = ["Kono"]
+description = "Kono's personal cargo++."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Kono-o/kargo"
+keywords = ["cli", "cargo"]
+categories = ["command-line-utilities"]
+homepage = "https://github.com/Kono-o/kargo"
+documentation = "https://docs.rs/kargo"
 
 [dependencies]
 tokio = { version = "1.37.0", features = ["full"] }
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
